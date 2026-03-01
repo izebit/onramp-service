@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException
 
+from app.aml_checker import check as aml_check
 from app.config import Settings
 from app.quotes.fee_provider import get_fee_provider
 from app.quotes.rate_provider import get_rate_provider
@@ -21,6 +22,7 @@ fee_provider = get_fee_provider()
 RATE_UNAVAILABLE_MESSAGE = (
     "We don't have an exchange rate for this currency pair. The given currency pair is not supported."
 )
+AML_CHECK_FAILED_MESSAGE = "AML check didn't pass."
 FEE_UNAVAILABLE_MESSAGE = (
     "We can't calculate a fee for this currency pair right now. Please try another pair or try again later."
 )
@@ -38,6 +40,9 @@ def create_quote(
 
     if body.amount <= 0:
         raise HTTPException(400, detail="amount must be positive")
+
+    if not aml_check(body.amount, currency_from, currency_to):
+        raise HTTPException(400, detail=AML_CHECK_FAILED_MESSAGE)
 
     try:
         rate = rate_provider.get_rate(currency_from, currency_to)

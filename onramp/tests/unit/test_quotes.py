@@ -45,6 +45,18 @@ def test_create_quote_invalid_amount(client: TestClient) -> None:
 
 
 @pytest.mark.unit
+def test_create_quote_aml_check_failed_returns_400(client: TestClient) -> None:
+    """When AML check returns False, return 400 with AML message."""
+    with patch("app.routers.quotes.aml_check", return_value=False):
+        response = client.post(
+            "/api/v1/quotes/USD/EUR",
+            json={"amount": 100.0},
+        )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "AML check didn't pass."
+
+
+@pytest.mark.unit
 def test_create_quote_rate_unavailable_returns_human_readable_error(
     client: TestClient,
 ) -> None:

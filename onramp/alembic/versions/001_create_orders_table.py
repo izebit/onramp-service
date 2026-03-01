@@ -17,7 +17,7 @@ down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-STATUS_VALUES = ("PENDING", "COMPLETED", "FAILED")
+STATUS_VALUES = ("PENDING", "PROCESSING", "COMPLETED", "FAILED")
 
 
 def upgrade() -> None:

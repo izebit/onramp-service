@@ -41,6 +41,7 @@ class OrderStatus(StrEnum):
     """Order lifecycle status."""
 
     PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 

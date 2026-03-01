@@ -8,6 +8,7 @@ packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"
+aiokafka = "^0.11.0"
 hash = { path = "../libs/hash", develop = true }
 alembic = "^1.14"
 fastapi = "^0.116"

@@ -33,6 +33,7 @@ def integration_session_factory(integration_engine):
 def _integration_app(postgres_url: str):
     """Set DATABASE_URL to container and import app so db module uses PostgreSQL."""
     os.environ["DATABASE_URL"] = postgres_url
+    os.environ["ENABLE_ORDER_TASKS_CDC"] = "false"
     from app.main import app  # noqa: E402
 
     return app

@@ -25,6 +25,7 @@ Settings are loaded from environment variables or a `.env` file (see `app/config
 - `SIGNATURE_VALID_SECONDS` (default: `300`) — how long a quote signature is valid
 - `SECRET_KEY` (default: `change-me-in-production`) — secret for JWT validation and quote signing
 - `AUTHENTICATION_DISABLED` (default: `false`) — if true, JWT `expiration_at` is not checked
+- `DATABASE_URL` (default: `postgresql://postgres:postgres@localhost:5432/onramp`) — PostgreSQL connection string for orders
 
 ## Endpoints
 

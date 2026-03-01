@@ -25,3 +25,6 @@ class Settings(BaseSettings):
 
     # If True, JWT expiration_at is not checked during validation
     authentication_disabled: bool = False
+
+    # PostgreSQL
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/onramp"

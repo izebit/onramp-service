@@ -2,10 +2,13 @@
 
 import logging
 import sys
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from app.config import Settings
+from app.db import Base, engine
+from app.models import Order  # noqa: F401 - register model with Base
 from app.routers import orders, quotes
 
 logging.basicConfig(
@@ -17,9 +20,18 @@ logging.basicConfig(
 
 settings = Settings()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create DB tables on startup."""
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
 app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,
+    lifespan=lifespan,
 )
 
 app.include_router(quotes.router, prefix="/api/v1")

@@ -1,12 +1,1 @@
-"""Pytest fixtures and configuration."""
-
-import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-@pytest.fixture
-def client() -> TestClient:
-    """FastAPI test client."""
-    return TestClient(app)
+"""Root pytest configuration. No app import here so unit/integration can set DB per suite."""

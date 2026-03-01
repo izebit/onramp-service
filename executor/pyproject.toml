@@ -16,6 +16,17 @@ pydantic-settings = "^2.6"
 sqlalchemy = "^2.0"
 psycopg2-binary = "^2.9"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+testcontainers = { extras = ["postgres"], version = "^4.9" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit", "tests/integration"]
+markers = [
+    "unit: unit tests",
+    "integration: integration tests (Testcontainers PostgreSQL)",
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

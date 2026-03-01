@@ -44,7 +44,7 @@ def test_create_quote_invalid_amount(client: TestClient) -> None:
 def test_create_quote_rate_unavailable_returns_human_readable_error(
     client: TestClient,
 ) -> None:
-    """When rate cannot be got, log and return rate-specific 404."""
+    """When rate cannot be got, log and return rate-specific 400."""
     with patch(
         "app.routers.quotes.rate_provider.get_rate",
         side_effect=ValueError("No rate for USD -> XYZ"),
@@ -53,16 +53,16 @@ def test_create_quote_rate_unavailable_returns_human_readable_error(
             "/api/v1/quotes/USD/EUR",
             json={"amount": 100.0},
         )
-    assert response.status_code == 404
+    assert response.status_code == 400
     assert response.json()["detail"] == (
-        "We don't have an exchange rate for this currency pair right now. Please try another pair or try again later."
+        "We don't have an exchange rate for this currency pair. The given currency pair is not supported."
     )
 
 
-def test_create_quote_fee_unavailable_returns_human_readable_error(
+def test_create_quote_fee_unavailable_returns_internal_error(
     client: TestClient,
 ) -> None:
-    """When fee cannot be got, log and return fee-specific 404."""
+    """When fee cannot be got, log and return 500 internal error."""
     with patch(
         "app.routers.quotes.fee_provider.get_fee",
         side_effect=ValueError("No fee for USD -> EUR"),
@@ -71,7 +71,7 @@ def test_create_quote_fee_unavailable_returns_human_readable_error(
             "/api/v1/quotes/USD/EUR",
             json={"amount": 100.0},
         )
-    assert response.status_code == 404
+    assert response.status_code == 500
     assert response.json()["detail"] == (
         "We can't calculate a fee for this currency pair right now. Please try another pair or try again later."
     )

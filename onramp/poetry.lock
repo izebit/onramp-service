@@ -51,25 +51,6 @@ idna = ">=2.8"
 trio = ["trio (>=0.31.0) ; python_version < \"3.10\"", "trio (>=0.32.0) ; python_version >= \"3.10\""]
 
 [[package]]
-name = "authorization"
-version = "0.1.0"
-description = "Shared JWT authorization (client_ref, expiration_at) for onramp and webhook services"
-optional = false
-python-versions = "^3.14"
-groups = ["main"]
-files = []
-develop = true
-
-[package.dependencies]
-fastapi = "^0.116"
-pydantic-settings = "^2.6"
-pyjwt = "^2.10"
-
-[package.source]
-type = "directory"
-url = "../libs/authorization"
-
-[[package]]
 name = "certifi"
 version = "2026.2.25"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -356,6 +337,25 @@ files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
 ]
+
+[[package]]
+name = "hash"
+version = "0.1.0"
+description = "Shared hash helpers (idempotency key) and JWT auth."
+optional = false
+python-versions = "^3.14"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+fastapi = "^0.116"
+pydantic-settings = "^2.6"
+pyjwt = "^2.10"
+
+[package.source]
+type = "directory"
+url = "../libs/hash"
 
 [[package]]
 name = "httpcore"
@@ -1687,4 +1687,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "2adb73ed87544683b876e57101498eaeb4cf249668c7cfa52f33ce60ec36c354"
+content-hash = "225620d842b632108ce027a3d7e3f3cf99468345bd4f7354f1179d478b2c2a41"

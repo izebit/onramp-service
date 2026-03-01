@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.quotes.signing import get_signature, verify_signature
+from hash_lib import get_signature, verify_signature
 
 
 @pytest.mark.unit

@@ -7,7 +7,7 @@ from typing import Any
 import jwt
 from fastapi import Header, HTTPException
 
-from authorization.config import AuthSettings
+from hash_lib.config import AuthSettings
 
 logger = logging.getLogger(__name__)
 settings = AuthSettings()

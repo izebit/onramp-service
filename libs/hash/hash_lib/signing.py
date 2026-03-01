@@ -1,16 +1,16 @@
-"""Generic signing (uses same secret as JWT for HMAC)."""
+"""Generic signing (HMAC-SHA256 using same secret as JWT)."""
 
 import hashlib
 import hmac
 from datetime import datetime, timezone
 
-from app.config import Settings
+from hash_lib.config import AuthSettings
 
-_settings = Settings()
+_settings = AuthSettings()
 
 
 def get_signature(*, algorithm: str = "sha256", **parts: object) -> str:
-    """Build canonical payload from named parts (sorted by name), HMAC-SHA256 with app secret."""
+    """Build canonical payload from named parts (sorted by name), HMAC-SHA256 with secret."""
     if algorithm != "sha256":
         raise ValueError(f"Unsupported algorithm: {algorithm}")
     payload = "".join(str(parts[k]) for k in sorted(parts))

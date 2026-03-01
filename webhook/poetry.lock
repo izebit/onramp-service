@@ -116,25 +116,6 @@ files = [
 ]
 
 [[package]]
-name = "authorization"
-version = "0.1.0"
-description = "Shared JWT auth (Bearer, client_ref + expiration_at)."
-optional = false
-python-versions = "^3.14"
-groups = ["main"]
-files = []
-develop = true
-
-[package.dependencies]
-fastapi = "^0.116"
-pydantic-settings = "^2.6"
-pyjwt = "^2.10"
-
-[package.source]
-type = "directory"
-url = "../libs/authorization"
-
-[[package]]
 name = "backoff"
 version = "0.1.0"
 description = "Shared retry delay (exponential backoff + jitter)."
@@ -435,6 +416,25 @@ files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
 ]
+
+[[package]]
+name = "hash"
+version = "0.1.0"
+description = "Shared hash helpers (idempotency key) and JWT auth."
+optional = false
+python-versions = "^3.14"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+fastapi = "^0.116"
+pydantic-settings = "^2.6"
+pyjwt = "^2.10"
+
+[package.source]
+type = "directory"
+url = "../libs/hash"
 
 [[package]]
 name = "httpcore"
@@ -1784,4 +1784,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "0c71c903948094cabbfc0a6691752f9daa417a47b9210a1474f5b17a713ec19c"
+content-hash = "71604cc30246c1a0fcb62097d03f834d713146cecc8ca5b402ef1b41eaabcaa3"

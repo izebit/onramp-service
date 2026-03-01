@@ -9,7 +9,7 @@ from app.aml_checker import check as aml_check
 from app.config import Settings
 from app.quotes.fee_provider import get_fee_provider
 from app.quotes.rate_provider import get_rate_provider
-from app.quotes.signing import get_signature
+from hash_lib import get_signature
 from app.schemas import Currency, QuoteRequest, QuoteResponse
 
 settings = Settings()

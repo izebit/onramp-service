@@ -200,21 +200,28 @@ def _expected_signature(payload_bytes: bytes, secret: str) -> str:
     return hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
 
 
+def _expected_idempotency_key(client_ref: str, order_id: str, order_status: str) -> str:
+    """Compute Idempotency-Key the same way as hash_lib.idempotency_key."""
+    from hash_lib import idempotency_key
+    return idempotency_key(client_ref, order_id, order_status)
+
+
 @pytest.mark.integration
 def test_sender_payload_and_signature_sent_to_webhook(
     settings,
     db_session,
     _patch_app_db,
 ) -> None:
-    """When sending, request body is JSON with order_id/order_status and X-Webhook-Signature is HMAC-SHA256 of body."""
+    """When sending, request body is JSON with order_id/order_status; headers include X-Webhook-Signature and Idempotency-Key."""
     order_id = "ord-payload-test-123"
     order_status = "COMPLETED"
+    client_ref = "client-payload"
     signature_secret = "my-secret-key"
     notification, step = _create_notification_and_step(
-        db_session, client_ref="client-payload", order_id=order_id, order_status=order_status
+        db_session, client_ref=client_ref, order_id=order_id, order_status=order_status
     )
     _create_webhook(
-        db_session, "client-payload", url="https://example.com/webhook", signature_secret=signature_secret
+        db_session, client_ref, url="https://example.com/webhook", signature_secret=signature_secret
     )
 
     requests_captured: list[dict] = []
@@ -245,3 +252,6 @@ def test_sender_payload_and_signature_sent_to_webhook(
 
     expected_sig = _expected_signature(req["content"], signature_secret)
     assert req["headers"].get("X-Webhook-Signature") == expected_sig
+
+    expected_idem = _expected_idempotency_key(client_ref, order_id, order_status)
+    assert req["headers"].get("Idempotency-Key") == expected_idem

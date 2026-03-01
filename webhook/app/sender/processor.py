@@ -36,7 +36,12 @@ def _run_cycle_sync(settings: Settings) -> None:
                     session.commit()
                     continue
                 payload = build_payload(notification)
-                success = send_to_webhooks(payload, webhooks, timeout_seconds=settings.sending_timeout_in_seconds)
+                success = send_to_webhooks(
+                    payload,
+                    webhooks,
+                    client_ref=notification.client_ref,
+                    timeout_seconds=settings.sending_timeout_in_seconds,
+                )
                 apply_step_result(
                     session=session,
                     step=step,

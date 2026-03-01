@@ -7,10 +7,9 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from authorization import get_jwt_payload
+from hash_lib import get_jwt_payload, verify_signature
 from app.db import get_db
 from app.models import Order
-from app.quotes.signing import verify_signature
 from app.schemas import OrderCreate, OrderDetailResponse, OrderResponse, OrderStatus
 
 logger = logging.getLogger(__name__)

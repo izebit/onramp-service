@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "authorization"
+name = "hash"
 version = "0.1.0"
-description = "Shared JWT auth (Bearer, client_ref + expiration_at)."
+description = "Shared hash helpers (idempotency key) and JWT auth."
 authors = []
 readme = "README.md"
-packages = [{ include = "authorization" }]
+packages = [{ include = "hash_lib" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"

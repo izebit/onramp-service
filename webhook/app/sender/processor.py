@@ -30,16 +30,16 @@ def _apply_result(
         return
     step.status = ProcessingStepStatus.FAILED
     session.flush()
-    if step.attempt_count >= settings.sending_max_retry:
+    if step.retry >= settings.sending_max_retry - 1:
         session.commit()
         return
-    delay = retry_delay_seconds(step.attempt_count - 1)
+    delay = retry_delay_seconds(step.retry)
     process_after = datetime.now(timezone.utc) + timedelta(seconds=delay)
     new_step = NotificationProcessingStep(
         notification_id=notification_id,
         status=ProcessingStepStatus.PENDING,
         process_after=process_after,
-        attempt_count=step.attempt_count + 1,
+        retry=step.retry + 1,
     )
     session.add(new_step)
     session.commit()

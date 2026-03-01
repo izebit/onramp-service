@@ -111,7 +111,7 @@ def test_sender_step_failed_creates_retry_when_webhook_fails(
     new_step = retries[1]
     assert new_step.status == ProcessingStepStatus.PENDING
     assert new_step.process_after is not None
-    assert new_step.attempt_count == 2
+    assert new_step.retry == 1
 
 
 @pytest.mark.integration
@@ -192,7 +192,7 @@ def test_sender_select_pending_tasks_returns_ready_steps(
     assert s.id == step.id
     assert n.client_ref == "client-select"
     assert whs == []
-    assert s.attempt_count == 1
+    assert s.retry == 0
 
 
 def _expected_signature(payload_bytes: bytes, secret: str) -> str:

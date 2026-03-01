@@ -15,8 +15,8 @@ def select_pending_tasks(
     *,
     limit: int = 100,
 ) -> list[tuple[NotificationProcessingStep, Notification, list[WebHook]]]:
-    """Select steps ready to process: PENDING, process_after <= now, attempt_count <= max. FOR UPDATE SKIP LOCKED.
-    Max attempt is enforced at insert time (processor does not insert a retry when attempt_count >= max)."""
+    """Select steps ready to process: PENDING, process_after <= now, retry < max. FOR UPDATE SKIP LOCKED.
+    Max attempt is enforced at insert time (processor does not insert when retry >= max - 1)."""
     now = datetime.now(timezone.utc)
     stmt = (
         select(NotificationProcessingStep)
@@ -24,7 +24,7 @@ def select_pending_tasks(
             and_(
                 NotificationProcessingStep.status == ProcessingStepStatus.PENDING,
                 NotificationProcessingStep.process_after <= now,
-                NotificationProcessingStep.attempt_count <= settings.sending_max_retry,
+                NotificationProcessingStep.retry < settings.sending_max_retry,
             )
         )
         .with_for_update(skip_locked=True)

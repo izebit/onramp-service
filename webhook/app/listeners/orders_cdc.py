@@ -75,7 +75,7 @@ def _upsert_notification(session: Session, client_ref: str, order_id: str, order
         step = NotificationProcessingStep(
             notification_id=row.id,
             status=ProcessingStepStatus.PENDING,
-            attempt_count=1,
+            retry=0,
         )
         session.add(step)
         session.commit()

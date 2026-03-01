@@ -44,4 +44,4 @@ class NotificationProcessingStep(Base):
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
-    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    retry: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

@@ -66,7 +66,7 @@ def upgrade() -> None:
             nullable=False,
             server_default=process_after_default,
         ),
-        sa.Column("attempt_count", sa.Integer(), nullable=False, server_default="1"),
+        sa.Column("retry", sa.Integer(), nullable=False, server_default="0"),
         sa.ForeignKeyConstraint(
             ["notification_id"], ["notifications.id"], ondelete="CASCADE"
         ),

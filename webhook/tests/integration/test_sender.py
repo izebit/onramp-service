@@ -3,10 +3,11 @@
 import hashlib
 import hmac
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pytest_httpserver import HTTPServer
 from sqlalchemy import select
 
 from app.models import Notification, NotificationProcessingStep, ProcessingStepStatus, WebHook
@@ -255,3 +256,101 @@ def test_sender_payload_and_signature_sent_to_webhook(
 
     expected_idem = _expected_idempotency_key(client_ref, order_id, order_status)
     assert req["headers"].get("Idempotency-Key") == expected_idem
+
+
+@pytest.mark.integration
+def test_sender_mock_server_500_then_200_delivers_on_third_attempt(
+    httpserver: HTTPServer,
+    settings,
+    db_session,
+    _patch_app_db,
+) -> None:
+    """Mock server returns 500 on first two POSTs, then 200; after two retries the message is delivered and step COMPLETED."""
+    httpserver.expect_oneshot_request("/webhook", method="POST").respond_with_data("", status=500)
+    httpserver.expect_oneshot_request("/webhook", method="POST").respond_with_data("", status=500)
+    httpserver.expect_oneshot_request("/webhook", method="POST").respond_with_data("", status=200)
+    webhook_url = httpserver.url_for("/webhook")
+
+    notification, step = _create_notification_and_step(db_session, client_ref="client-retry-server")
+    _create_webhook(db_session, "client-retry-server", url=webhook_url)
+
+    # First attempt: 500 -> FAILED, retry step created
+    _run_cycle_sync(settings)
+    db_session.refresh(step)
+    assert step.status == ProcessingStepStatus.FAILED
+    steps = list(
+        db_session.scalars(
+            select(NotificationProcessingStep)
+            .where(NotificationProcessingStep.notification_id == notification.id)
+            .order_by(NotificationProcessingStep.id)
+        ).all()
+    )
+    assert len(steps) == 2
+    retry_step = steps[1]
+    assert retry_step.status == ProcessingStepStatus.PENDING
+    retry_step.process_after = datetime.now(timezone.utc) - timedelta(seconds=1)
+    db_session.commit()
+
+    # Second attempt: 500 -> FAILED, another retry step
+    _run_cycle_sync(settings)
+    db_session.refresh(retry_step)
+    assert retry_step.status == ProcessingStepStatus.FAILED
+    steps = list(
+        db_session.scalars(
+            select(NotificationProcessingStep)
+            .where(NotificationProcessingStep.notification_id == notification.id)
+            .order_by(NotificationProcessingStep.id)
+        ).all()
+    )
+    assert len(steps) == 3
+    retry_step2 = steps[2]
+    retry_step2.process_after = datetime.now(timezone.utc) - timedelta(seconds=1)
+    db_session.commit()
+
+    # Third attempt: 200 -> COMPLETED
+    _run_cycle_sync(settings)
+    db_session.refresh(retry_step2)
+    assert retry_step2.status == ProcessingStepStatus.COMPLETED
+
+
+@pytest.mark.integration
+def test_sender_mock_server_always_500_message_not_delivered(
+    httpserver: HTTPServer,
+    settings,
+    db_session,
+    _patch_app_db,
+) -> None:
+    """Mock server always returns 500; after retries are exhausted step stays FAILED and message is not delivered."""
+    httpserver.expect_request("/webhook", method="POST").respond_with_data("", status=500)
+    webhook_url = httpserver.url_for("/webhook")
+
+    notification, step = _create_notification_and_step(db_session, client_ref="client-fail-server")
+    _create_webhook(db_session, "client-fail-server", url=webhook_url)
+    max_retry = settings.sending_max_retry
+
+    for _ in range(max_retry):
+        _run_cycle_sync(settings)
+        steps = list(
+            db_session.scalars(
+                select(NotificationProcessingStep)
+                .where(NotificationProcessingStep.notification_id == notification.id)
+                .order_by(NotificationProcessingStep.id)
+            ).all()
+        )
+        pending = [s for s in steps if s.status == ProcessingStepStatus.PENDING]
+        if not pending:
+            break
+        next_step = pending[0]
+        next_step.process_after = datetime.now(timezone.utc) - timedelta(seconds=1)
+        db_session.commit()
+
+    steps = list(
+        db_session.scalars(
+            select(NotificationProcessingStep)
+            .where(NotificationProcessingStep.notification_id == notification.id)
+            .order_by(NotificationProcessingStep.id)
+        ).all()
+    )
+    completed = [s for s in steps if s.status == ProcessingStepStatus.COMPLETED]
+    assert len(completed) == 0, "message must not be delivered (no COMPLETED step)"
+    assert all(s.status == ProcessingStepStatus.FAILED for s in steps)

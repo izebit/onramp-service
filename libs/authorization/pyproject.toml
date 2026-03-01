@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "authorization"
+version = "0.1.0"
+description = "Shared JWT auth (Bearer, client_ref + expiration_at)."
+authors = []
+readme = "README.md"
+packages = [{ include = "authorization" }]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+fastapi = "^0.116"
+pyjwt = "^2.10"
+pydantic-settings = "^2.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

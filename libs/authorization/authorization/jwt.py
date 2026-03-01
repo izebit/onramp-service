@@ -1,9 +1,4 @@
-"""JWT authentication.
-
-JWT payload must contain only:
-- client_ref: string
-- expiration_at: Unix timestamp (seconds); checked unless authentication_disabled is True.
-"""
+"""JWT validation: Bearer token, payload must contain client_ref and expiration_at."""
 
 import logging
 import time
@@ -12,10 +7,10 @@ from typing import Any
 import jwt
 from fastapi import Header, HTTPException
 
-from app.config import Settings
+from authorization.config import AuthSettings
 
 logger = logging.getLogger(__name__)
-settings = Settings()
+settings = AuthSettings()
 
 JWT_ALGORITHM = "HS256"
 UNAUTHORIZED_MESSAGE = "Invalid or missing authorization."
@@ -24,7 +19,7 @@ UNAUTHORIZED_MESSAGE = "Invalid or missing authorization."
 def get_jwt_payload(
     authorization: str | None = Header(None, alias="Authorization"),
 ) -> dict[str, Any]:
-    """Extract and validate Bearer JWT; return the payload or raise 401.
+    """Extract and validate Bearer JWT; return payload or raise 401.
 
     Payload must contain client_ref (string) and expiration_at (Unix timestamp).
     expiration_at is ignored when authentication_disabled is True.

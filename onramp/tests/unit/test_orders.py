@@ -7,7 +7,8 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 
-from app.auth import JWT_ALGORITHM
+from authorization import JWT_ALGORITHM
+
 from app.config import Settings
 
 settings = Settings()
@@ -193,7 +194,7 @@ def test_create_order_expired_jwt_accepted_when_authentication_disabled(
         settings.secret_key,
         algorithm=JWT_ALGORITHM,
     )
-    with patch("app.auth.settings") as mock_settings:
+    with patch("authorization.jwt.settings") as mock_settings:
         mock_settings.secret_key = settings.secret_key
         mock_settings.authentication_disabled = True
         response = client.post(

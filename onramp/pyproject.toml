@@ -1,18 +1,18 @@
 [tool.poetry]
 name = "onramp"
 version = "0.1.0"
-description = "FastAPI stub service with Poetry and pydantic-settings"
+description = "Quotes and orders API (JWT, PostgreSQL, Alembic)."
 authors = []
 readme = "README.md"
 packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"
+authorization = { path = "../libs/authorization", develop = true }
 alembic = "^1.14"
 fastapi = "^0.116"
 uvicorn = { extras = ["standard"], version = "^0.32" }
 pydantic-settings = "^2.6"
-pyjwt = "^2.10"
 sqlalchemy = "^2.0"
 psycopg2-binary = "^2.9"
 

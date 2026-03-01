@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.auth import get_jwt_payload
+from authorization import get_jwt_payload
 from app.db import get_db
 from app.models import WebHook
 from app.schemas import WebhookCreate, WebhookResponse

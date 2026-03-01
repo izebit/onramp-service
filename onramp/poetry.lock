@@ -51,6 +51,25 @@ idna = ">=2.8"
 trio = ["trio (>=0.31.0) ; python_version < \"3.10\"", "trio (>=0.32.0) ; python_version >= \"3.10\""]
 
 [[package]]
+name = "authorization"
+version = "0.1.0"
+description = "Shared JWT authorization (client_ref, expiration_at) for onramp and webhook services"
+optional = false
+python-versions = "^3.14"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+fastapi = "^0.116"
+pydantic-settings = "^2.6"
+pyjwt = "^2.10"
+
+[package.source]
+type = "directory"
+url = "../libs/authorization"
+
+[[package]]
 name = "certifi"
 version = "2026.2.25"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1668,4 +1687,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "0d395c5aa4b3ed0117da934990c42c405bdd3f1a2fe449cb618da361a56b2fc9"
+content-hash = "2adb73ed87544683b876e57101498eaeb4cf249668c7cfa52f33ce60ec36c354"

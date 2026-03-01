@@ -7,7 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.auth import JWT_ALGORITHM
+from authorization import JWT_ALGORITHM
+
 from app.config import Settings
 
 settings = Settings()

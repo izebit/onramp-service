@@ -6,7 +6,8 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 
-from app.auth import JWT_ALGORITHM
+from authorization import JWT_ALGORITHM
+
 from app.config import Settings
 
 settings = Settings()

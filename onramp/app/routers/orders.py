@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth import get_jwt_payload
+from authorization import get_jwt_payload
 from app.db import get_db
 from app.models import Order
 from app.quotes.signing import verify_signature

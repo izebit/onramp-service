@@ -10,7 +10,7 @@ from authorization import get_jwt_payload
 from app.db import get_db
 from app.models import Order
 from app.quotes.signing import verify_signature
-from app.schemas import OrderCreate, OrderResponse, OrderStatus
+from app.schemas import OrderCreate, OrderDetailResponse, OrderResponse, OrderStatus
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -49,3 +49,19 @@ def create_order(
     db.commit()
     db.refresh(order)
     return OrderResponse(order_id=UUID(order.order_id))
+
+
+@router.get("/{order_id}", response_model=OrderDetailResponse)
+def get_order(
+    order_id: UUID,
+    db: Session = Depends(get_db),
+) -> OrderDetailResponse:
+    """Get order by id. Returns 404 if not found."""
+    order = db.get(Order, str(order_id))
+    if order is None:
+        raise HTTPException(404, detail="Order not found")
+    return OrderDetailResponse(
+        order_id=UUID(order.order_id),
+        status=order.status,
+        client_ref=order.client_ref,
+    )

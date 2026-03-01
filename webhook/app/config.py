@@ -22,3 +22,11 @@ class Settings(BaseSettings):
     authentication_disabled: bool = False
 
     database_url: str = "postgresql://postgres:postgres@localhost:5432/webhook"
+
+    # Order service (REST) – fetch order by id for status
+    order_service_url: str = "http://localhost:8000"
+
+    # Kafka (Debezium CDC orders)
+    kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_orders_topic: str = "dbserver1.public.orders"
+    kafka_consumer_group: str = "webhook-orders-consumer"

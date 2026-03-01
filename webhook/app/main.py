@@ -1,5 +1,6 @@
 """FastAPI application entrypoint."""
 
+import asyncio
 import logging
 import sys
 from pathlib import Path
@@ -10,6 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config import Settings
+from app.listeners import run_orders_cdc_consumer
 from app.routers import router
 
 logging.basicConfig(
@@ -32,9 +34,17 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations on startup, then serve."""
+    """Run migrations, start orders CDC consumer, then serve."""
     _run_migrations()
-    yield
+    consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
+    try:
+        yield
+    finally:
+        consumer_task.cancel()
+        try:
+            await consumer_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(

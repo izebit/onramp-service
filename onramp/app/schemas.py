@@ -41,7 +41,6 @@ class OrderStatus(StrEnum):
     """Order lifecycle status."""
 
     PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
@@ -70,3 +69,11 @@ class OrderResponse(BaseModel):
     """Order creation response."""
 
     order_id: UUID
+
+
+class OrderDetailResponse(BaseModel):
+    """Order detail (by id) for external callers."""
+
+    order_id: UUID
+    status: OrderStatus
+    client_ref: str

@@ -9,7 +9,11 @@ from alembic import context
 
 from app.config import Settings
 from app.db import Base
-from app.models import WebHook  # noqa: F401 - register with Base
+from app.models import (  # noqa: F401 - register with Base
+    Notification,
+    NotificationProcessingStep,
+    WebHook,
+)
 
 config = context.config
 if config.config_file_name is not None:

@@ -8,9 +8,11 @@ packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"
+aiokafka = "^0.11.0"
 authorization = { path = "../libs/authorization", develop = true }
 alembic = "^1.14"
 fastapi = "^0.116"
+httpx = "^0.28"
 uvicorn = { extras = ["standard"], version = "^0.32" }
 pydantic-settings = "^2.6"
 sqlalchemy = "^2.0"
@@ -18,7 +20,6 @@ psycopg2-binary = "^2.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
-httpx = "^0.28"
 testcontainers = { extras = ["postgres"], version = "^4.9" }
 
 [build-system]

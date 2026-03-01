@@ -16,3 +16,6 @@ class Settings(BaseSettings):
     debug: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
+
+    # How long a quote signature is valid (seconds)
+    signature_valid_seconds: int = 300

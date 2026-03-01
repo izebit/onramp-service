@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Order service (REST) – fetch order by id for status
     order_service_url: str = "http://localhost:8000"
 
+    # Sender: notification step delivery
+    sending_max_retry: int = 5
+    sending_timeout_in_seconds: float = 10.0
+
     # Kafka (Debezium CDC orders)
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_orders_topic: str = "dbserver1.public.orders"

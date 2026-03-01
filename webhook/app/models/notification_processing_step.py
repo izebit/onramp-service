@@ -1,8 +1,9 @@
-"""Processing step for a notification: status and retry count."""
+"""Processing step for a notification: status and process_after for backoff."""
 
+from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
-from sqlalchemy import Enum, ForeignKey, Integer, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -17,7 +18,7 @@ class ProcessingStepStatus(str, PyEnum):
 
 
 class NotificationProcessingStep(Base):
-    """One processing step for a notification (status + retry)."""
+    """One processing step for a notification (status + process_after)."""
 
     __tablename__ = "notification_processing_steps"
 
@@ -33,4 +34,14 @@ class NotificationProcessingStep(Base):
         nullable=False,
         default=ProcessingStepStatus.PENDING,
     )
-    retry: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+    process_after: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)

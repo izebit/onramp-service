@@ -12,6 +12,7 @@ from fastapi import FastAPI
 
 from app.config import Settings
 from app.listeners import run_orders_cdc_consumer
+from app.sender import run_sender
 from app.routers import router
 
 logging.basicConfig(
@@ -34,15 +35,21 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations, start orders CDC consumer, then serve."""
+    """Run migrations, start orders CDC consumer and sender, then serve."""
     _run_migrations()
     consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
+    sender_task = asyncio.create_task(run_sender(settings))
     try:
         yield
     finally:
         consumer_task.cancel()
+        sender_task.cancel()
         try:
             await consumer_task
+        except asyncio.CancelledError:
+            pass
+        try:
+            await sender_task
         except asyncio.CancelledError:
             pass
 

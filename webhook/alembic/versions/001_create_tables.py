@@ -26,6 +26,12 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.UniqueConstraint("client_ref", "url", name="uq_webhooks_client_ref_url"),
     )
+    op.create_index(
+        op.f("ix_webhooks_client_ref"),
+        "webhooks",
+        ["client_ref"],
+        unique=False,
+    )
 
     op.create_table(
         "notifications",
@@ -39,12 +45,28 @@ def upgrade() -> None:
         ),
     )
 
+    conn = op.get_bind()
+    process_after_default = (
+        sa.text("now()") if conn.dialect.name == "postgresql" else sa.text("(datetime('now'))")
+    )
     op.create_table(
         "notification_processing_steps",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("notification_id", sa.Integer(), nullable=False),
         sa.Column("status", sa.String(32), nullable=False),
-        sa.Column("retry", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=process_after_default,
+        ),
+        sa.Column(
+            "process_after",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=process_after_default,
+        ),
+        sa.Column("attempt_count", sa.Integer(), nullable=False, server_default="1"),
         sa.ForeignKeyConstraint(
             ["notification_id"], ["notifications.id"], ondelete="CASCADE"
         ),
@@ -65,4 +87,5 @@ def downgrade() -> None:
     )
     op.drop_table("notification_processing_steps")
     op.drop_table("notifications")
+    op.drop_index(op.f("ix_webhooks_client_ref"), table_name="webhooks")
     op.drop_table("webhooks")

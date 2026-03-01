@@ -47,7 +47,6 @@ def test_process_cdc_envelope_inserts_notification(
     )
     assert len(steps) == 1
     assert steps[0].status == ProcessingStepStatus.PENDING
-    assert steps[0].retry == 0
 
 
 @pytest.mark.integration

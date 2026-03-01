@@ -24,7 +24,6 @@ class OrderProcessingStep(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     order_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
-    idempotency_key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     status: Mapped[ProcessingStepStatus] = mapped_column(
         Enum(ProcessingStepStatus),
         nullable=False,

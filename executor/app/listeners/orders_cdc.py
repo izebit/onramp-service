@@ -16,27 +16,21 @@ from app.models import OrderProcessingStep, ProcessingStepStatus
 logger = logging.getLogger(__name__)
 
 
-def _get_order_data_from_create_envelope(value: dict) -> tuple[str, str] | None:
-    """Extract order_id and idempotency_key from Debezium envelope for create (op 'c') only."""
+def _get_order_id_from_create_envelope(value: dict) -> str | None:
+    """Extract order_id from Debezium envelope for create (op 'c') only."""
     if value.get("op") != "c":
         return None
     after = value.get("after")
     if not isinstance(after, dict):
         return None
     order_id = after.get("order_id")
-    idempotency_key = after.get("idempotency_key")
-    if not order_id or idempotency_key is None:
-        return None
-    return (order_id, idempotency_key)
+    return order_id if order_id else None
 
 
-def _insert_order_processing_step(
-    session: Session, order_id: str, idempotency_key: str
-) -> None:
+def _insert_order_processing_step(session: Session, order_id: str) -> None:
     """Insert one order_processing_steps row (enqueue order for execution)."""
     step = OrderProcessingStep(
         order_id=order_id,
-        idempotency_key=idempotency_key,
         status=ProcessingStepStatus.PENDING,
         retry=0,
         process_after=datetime.now(timezone.utc),
@@ -48,13 +42,12 @@ def _insert_order_processing_step(
 async def process_cdc_envelope(envelope: dict, settings: Settings) -> bool:
     """Process one order CDC envelope: on create, enqueue order for execution.
     Returns True if a row was inserted."""
-    data = _get_order_data_from_create_envelope(envelope)
-    if not data:
+    order_id = _get_order_id_from_create_envelope(envelope)
+    if not order_id:
         return False
-    order_id, idempotency_key = data
     session = SessionLocal()
     try:
-        _insert_order_processing_step(session, order_id, idempotency_key)
+        _insert_order_processing_step(session, order_id)
         logger.info("Inserted order_processing_step order_id=%s", order_id)
         return True
     finally:

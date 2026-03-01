@@ -32,7 +32,6 @@ def upgrade() -> None:
         "order_processing_steps",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("order_id", sa.String(36), nullable=False),
-        sa.Column("idempotency_key", sa.String(255), nullable=False),
         sa.Column("status", status_type, nullable=False, server_default="PENDING"),
         sa.Column("retry", sa.Integer(), nullable=False, server_default="0"),
         sa.Column(
@@ -55,19 +54,9 @@ def upgrade() -> None:
         ["order_id"],
         unique=False,
     )
-    op.create_index(
-        op.f("ix_order_processing_steps_idempotency_key"),
-        "order_processing_steps",
-        ["idempotency_key"],
-        unique=False,
-    )
 
 
 def downgrade() -> None:
-    op.drop_index(
-        op.f("ix_order_processing_steps_idempotency_key"),
-        table_name="order_processing_steps",
-    )
     op.drop_index(
         op.f("ix_order_processing_steps_order_id"),
         table_name="order_processing_steps",

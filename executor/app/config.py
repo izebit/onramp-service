@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # Invoker: process order_processing_steps (payment + retry)
     execution_max_retry: int = 5
+    order_service_url: str = "http://localhost:8000"
 
     # Kafka (Debezium CDC orders)
     kafka_bootstrap_servers: str = "localhost:9092"

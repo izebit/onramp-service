@@ -8,13 +8,12 @@ Service that executes orders. It consumes order CDC events from Kafka and enqueu
 |----------------|-----------|--------------------------------|
 | id             | serial PK |                                |
 | order_id       | string    | Order ID from CDC              |
-| idempotency_key| string    | From CDC event (order)         |
 | status         | enum      | PENDING, COMPLETED, FAILED     |
 | retry          | int       | Default 0                      |
 | process_after  | timestamptz | When to process (default now) |
 | created_at     | timestamptz | Row creation time             |
 
-On each **create** (op `c`) event for the orders topic, one row is inserted with `order_id`, `idempotency_key` from the event, `status=PENDING`, `retry=0`, `process_after=now()`.
+On each **create** (op `c`) event for the orders topic, one row is inserted with `order_id` from the event, `status=PENDING`, `retry=0`, `process_after=now()`.
 
 ## Run
 

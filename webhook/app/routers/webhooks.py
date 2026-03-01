@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -14,13 +14,24 @@ from app.schemas import WebhookCreate, WebhookResponse
 router = APIRouter(prefix="/clients/webhooks", tags=["webhooks"])
 
 DUPLICATE_WEBHOOK_MESSAGE = "A webhook with this URL is already registered for this client."
+UNAUTHORIZED_MESSAGE = "Invalid or missing authorization."
+
+
+def require_jwt_payload(
+    authorization: str | None = Header(None, alias="Authorization"),
+) -> dict:
+    """FastAPI dependency: return JWT payload or raise 401."""
+    payload = get_jwt_payload(authorization)
+    if payload is None:
+        raise HTTPException(401, detail=UNAUTHORIZED_MESSAGE)
+    return payload
 
 
 @router.post("", response_model=WebhookResponse)
 def create_webhook(
     body: WebhookCreate,
     db: Session = Depends(get_db),
-    jwt_payload: dict = Depends(get_jwt_payload),
+    jwt_payload: dict = Depends(require_jwt_payload),
 ) -> WebhookResponse:
     """Register a webhook URL for the client identified by JWT (client_ref). (client_ref, url) is unique."""
     client_ref = jwt_payload["client_ref"]

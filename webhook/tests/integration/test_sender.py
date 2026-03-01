@@ -201,9 +201,9 @@ def _expected_signature(payload_bytes: bytes, secret: str) -> str:
 
 
 def _expected_idempotency_key(client_ref: str, order_id: str, order_status: str) -> str:
-    """Compute Idempotency-Key the same way as hash_lib.idempotency_key."""
-    from hash_lib import idempotency_key
-    return idempotency_key(client_ref, order_id, order_status)
+    """Compute Idempotency-Key the same way as hash_lib.get_idempotency_key."""
+    from hash_lib import get_idempotency_key
+    return get_idempotency_key(client_ref, order_id, order_status)
 
 
 @pytest.mark.integration

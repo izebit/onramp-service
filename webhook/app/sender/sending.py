@@ -6,7 +6,7 @@ import json
 import logging
 
 import httpx
-from hash_lib import idempotency_key
+from hash_lib import get_idempotency_key
 
 from app.models import Notification, WebHook
 
@@ -38,7 +38,7 @@ def send_to_webhooks(
 ) -> bool:
     """POST payload to each webhook URL (sync). Returns True if all succeed."""
     payload_bytes = json.dumps(payload, sort_keys=True).encode()
-    idem_key = idempotency_key(
+    idempotency_key = get_idempotency_key(
         client_ref,
         payload["order_id"],
         payload["order_status"],
@@ -50,7 +50,7 @@ def send_to_webhooks(
                 headers = {
                     "Content-Type": "application/json",
                     "X-Webhook-Signature": signature,
-                    "Idempotency-Key": idem_key,
+                    "Idempotency-Key": idempotency_key,
                 }
                 r = client.post(wh.url, content=payload_bytes, headers=headers)
                 r.raise_for_status()

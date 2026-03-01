@@ -16,6 +16,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 INVALID_QUOTE_MESSAGE = "Invalid or expired quote."
+UNAUTHORIZED_MESSAGE = "Invalid or missing authorization."
+
+
+def require_jwt_payload(
+    authorization: str | None = Header(None, alias="Authorization"),
+) -> dict:
+    """FastAPI dependency: return JWT payload or raise 401."""
+    payload = get_jwt_payload(authorization)
+    if payload is None:
+        raise HTTPException(401, detail=UNAUTHORIZED_MESSAGE)
+    return payload
 
 
 @router.post("", response_model=OrderResponse)
@@ -23,7 +34,7 @@ def create_order(
     body: OrderCreate,
     db: Session = Depends(get_db),
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
-    jwt_payload: dict = Depends(get_jwt_payload),
+    jwt_payload: dict = Depends(require_jwt_payload),
 ) -> OrderResponse:
     """Create an order from a quote. Validates JWT, quote signature and expiry; stores order in DB.
     Idempotency-Key required: same key + same body returns existing order; same key + different body returns 409."""

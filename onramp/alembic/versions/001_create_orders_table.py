@@ -32,6 +32,7 @@ def upgrade() -> None:
         "orders",
         sa.Column("order_id", sa.String(36), primary_key=True),
         sa.Column("client_ref", sa.String(255), nullable=False),
+        sa.Column("idempotency_key", sa.String(255), nullable=False),
         sa.Column("quote", JSON, nullable=False, server_default=sa.text("'{}'")),
         sa.Column("status", status_type, nullable=False, server_default="PENDING"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -41,6 +42,18 @@ def upgrade() -> None:
         "orders",
         ["client_ref"],
         unique=False,
+    )
+    op.create_index(
+        op.f("ix_orders_idempotency_key"),
+        "orders",
+        ["idempotency_key"],
+        unique=False,
+    )
+    op.create_index(
+        "uq_orders_client_ref_idempotency_key",
+        "orders",
+        ["client_ref", "idempotency_key"],
+        unique=True,
     )
 
 

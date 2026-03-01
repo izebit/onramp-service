@@ -4,6 +4,7 @@ import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from authorization import get_jwt_payload
@@ -22,10 +23,12 @@ INVALID_QUOTE_MESSAGE = "Invalid or expired quote."
 def create_order(
     body: OrderCreate,
     db: Session = Depends(get_db),
-    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
     jwt_payload: dict = Depends(get_jwt_payload),
 ) -> OrderResponse:
-    """Create an order from a quote. Validates JWT, quote signature and expiry; stores order in DB."""
+    """Create an order from a quote. Validates JWT, quote signature and expiry; stores order in DB.
+    Idempotency-Key required: same key + same body returns existing order; same key + different body returns 409."""
+    client_ref = jwt_payload["client_ref"]
     quote = body.quote
     expired_at_str = quote.expired_at.isoformat()
     is_valid = verify_signature(
@@ -40,9 +43,23 @@ def create_order(
     if not is_valid:
         raise HTTPException(400, detail=INVALID_QUOTE_MESSAGE)
 
+    new_quote = quote.model_dump(mode="json", by_alias=True)
+
+    existing = db.execute(
+        select(Order).where(
+            Order.client_ref == client_ref,
+            Order.idempotency_key == idempotency_key,
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        if existing.quote == new_quote:
+            return OrderResponse(order_id=UUID(existing.order_id))
+        raise HTTPException(409, detail="Idempotency key already used with different request body")
+
     order = Order(
-        client_ref=jwt_payload["client_ref"],
-        quote=quote.model_dump(mode="json", by_alias=True),
+        client_ref=client_ref,
+        idempotency_key=idempotency_key,
+        quote=new_quote,
         status=OrderStatus.PENDING,
     )
     db.add(order)

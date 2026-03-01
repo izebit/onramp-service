@@ -52,7 +52,7 @@ def test_create_order_persisted_in_postgres(
     response = client.post(
         "/api/v1/orders",
         json=body,
-        headers=_valid_auth_headers(),
+        headers={**_valid_auth_headers(), "Idempotency-Key": "integration-test-key"},
     )
     assert response.status_code == 200
     data = response.json()

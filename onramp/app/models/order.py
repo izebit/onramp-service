@@ -26,6 +26,7 @@ class Order(Base):
         default=_uuid_default,
     )
     client_ref: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     quote: Mapped[dict] = mapped_column(JSON, nullable=False)
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus),

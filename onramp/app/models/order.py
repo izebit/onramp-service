@@ -1,12 +1,14 @@
 """Order model."""
 
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import uuid4
 
-from sqlalchemy import DateTime, Float, String
+from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import JSON
 
 from app.db import Base
+from app.schemas import OrderStatus
 
 
 def _uuid_default() -> str:
@@ -24,13 +26,12 @@ class Order(Base):
         default=_uuid_default,
     )
     client_ref: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    quote_id: Mapped[str] = mapped_column(String(36), nullable=False)
-    from_currency: Mapped[str] = mapped_column(String(16), nullable=False)
-    to_currency: Mapped[str] = mapped_column(String(16), nullable=False)
-    amount: Mapped[float] = mapped_column(Float, nullable=False)
-    fee: Mapped[float] = mapped_column(Float, nullable=False)
-    rate: Mapped[float] = mapped_column(Float, nullable=False)
-    expired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    quote: Mapped[dict] = mapped_column(JSON, nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(
+        Enum(OrderStatus),
+        nullable=False,
+        default=OrderStatus.PENDING,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

@@ -39,7 +39,6 @@ def test_create_order_persisted_in_postgres(
     quote = quote_response.json()
     body = {
         "quote": {
-            "id": quote["quote_id"],
             "from": quote["from"],
             "to": quote["to"],
             "amount": quote["amount"],
@@ -67,8 +66,9 @@ def test_create_order_persisted_in_postgres(
         order = session.get(Order, order_id)
         assert order is not None
         assert order.client_ref == "test-client-ref"
-        assert order.from_currency == "USD"
-        assert order.to_currency == "EUR"
-        assert order.amount == 100.0
+        assert order.status.value == "PENDING"
+        assert order.quote["from"] == "USD"
+        assert order.quote["to"] == "EUR"
+        assert order.quote["amount"] == 100.0
     finally:
         session.close()

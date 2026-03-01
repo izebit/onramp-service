@@ -24,11 +24,10 @@ class QuoteRequest(BaseModel):
 
 
 class QuoteResponse(BaseModel):
-    """Quote response."""
+    """Quote response (no quote_id)."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    quote_id: UUID
     from_: Currency = Field(alias="from")
     to: Currency
     amount: float
@@ -38,12 +37,20 @@ class QuoteResponse(BaseModel):
     signature: str
 
 
+class OrderStatus(StrEnum):
+    """Order lifecycle status."""
+
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
 class OrderQuote(BaseModel):
-    """Quote payload when creating an order."""
+    """Quote payload when creating an order (no id)."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: UUID
     from_: Currency = Field(alias="from")
     to: Currency
     amount: float

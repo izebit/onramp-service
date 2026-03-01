@@ -15,7 +15,6 @@ def test_create_quote_success(client: TestClient) -> None:
     )
     assert response.status_code == 200
     data = response.json()
-    assert "quote_id" in data
     assert data["from"] == "USD"
     assert data["to"] == "EUR"
     assert data["amount"] == 100.0

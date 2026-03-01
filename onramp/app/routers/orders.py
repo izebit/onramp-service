@@ -10,7 +10,7 @@ from app.auth import get_jwt_payload
 from app.db import get_db
 from app.models import Order
 from app.quotes.signing import verify_signature
-from app.schemas import OrderCreate, OrderResponse
+from app.schemas import OrderCreate, OrderResponse, OrderStatus
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -34,7 +34,6 @@ def create_order(
         expired_at=expired_at_str,
         fee=quote.fee,
         from_currency=quote.from_,
-        quote_id=quote.id,
         rate=quote.rate,
         to_currency=quote.to,
     )
@@ -43,13 +42,8 @@ def create_order(
 
     order = Order(
         client_ref=jwt_payload["client_ref"],
-        quote_id=str(quote.id),
-        from_currency=str(quote.from_),
-        to_currency=str(quote.to),
-        amount=quote.amount,
-        fee=quote.fee,
-        rate=quote.rate,
-        expired_at=quote.expired_at,
+        quote=quote.model_dump(mode="json", by_alias=True),
+        status=OrderStatus.PENDING,
     )
     db.add(order)
     db.commit()

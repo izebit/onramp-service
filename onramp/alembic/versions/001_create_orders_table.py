@@ -24,7 +24,7 @@ def upgrade() -> None:
     """Create orders table with quote (JSON) and status."""
     conn = op.get_bind()
     if conn.dialect.name == "postgresql":
-        status_type = sa.Enum(*STATUS_VALUES, name="orderstatus", create_type=True)
+        status_type = sa.Enum(*STATUS_VALUES, name="order_status", create_type=True)
     else:
         status_type = sa.String(16)
 
@@ -50,5 +50,5 @@ def downgrade() -> None:
     op.drop_table("orders")
     conn = op.get_bind()
     if conn.dialect.name == "postgresql":
-        sa.Enum(*STATUS_VALUES, name="orderstatus").drop(conn, checkfirst=True)
+        sa.Enum(*STATUS_VALUES, name="order_status").drop(conn, checkfirst=True)
 

@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
 
@@ -62,7 +61,6 @@ def create_quote(
         )
         raise HTTPException(500, detail=FEE_UNAVAILABLE_MESSAGE) from e
 
-    quote_id = uuid4()
     expired_at = datetime.now(timezone.utc).replace(microsecond=0)
     expired_at = expired_at + timedelta(seconds=settings.signature_valid_seconds)
 
@@ -71,13 +69,11 @@ def create_quote(
         expired_at=expired_at.isoformat(),
         fee=fee,
         from_currency=currency_from,
-        quote_id=quote_id,
         rate=rate,
         to_currency=currency_to,
     )
 
     return QuoteResponse(
-        quote_id=quote_id,
         from_=currency_from,
         to=currency_to,
         amount=body.amount,

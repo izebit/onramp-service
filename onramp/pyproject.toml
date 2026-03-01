@@ -8,7 +8,8 @@ packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"
-fastapi = "^0.115"
+alembic = "^1.14"
+fastapi = "^0.116"
 uvicorn = { extras = ["standard"], version = "^0.32" }
 pydantic-settings = "^2.6"
 pyjwt = "^2.10"

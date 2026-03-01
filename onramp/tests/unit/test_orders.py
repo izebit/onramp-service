@@ -2,7 +2,6 @@
 
 import time
 from unittest.mock import patch
-from uuid import uuid4
 
 import jwt
 import pytest
@@ -37,7 +36,6 @@ def test_create_order_success(client: TestClient) -> None:
     quote = quote_response.json()
     body = {
         "quote": {
-            "id": quote["quote_id"],
             "from": quote["from"],
             "to": quote["to"],
             "amount": quote["amount"],
@@ -67,7 +65,6 @@ def test_create_order_unauthorized_without_header(client: TestClient) -> None:
         "/api/v1/orders",
         json={
             "quote": {
-                "id": str(uuid4()),
                 "from": "USD",
                 "to": "EUR",
                 "amount": 100.0,
@@ -88,7 +85,6 @@ def test_create_order_unauthorized_invalid_jwt(client: TestClient) -> None:
         "/api/v1/orders",
         json={
             "quote": {
-                "id": str(uuid4()),
                 "from": "USD",
                 "to": "EUR",
                 "amount": 100.0,
@@ -115,7 +111,6 @@ def test_create_order_unauthorized_jwt_without_client_ref(client: TestClient) ->
         "/api/v1/orders",
         json={
             "quote": {
-                "id": str(uuid4()),
                 "from": "USD",
                 "to": "EUR",
                 "amount": 100.0,
@@ -142,7 +137,6 @@ def test_create_order_unauthorized_jwt_without_expiration_at(client: TestClient)
         "/api/v1/orders",
         json={
             "quote": {
-                "id": str(uuid4()),
                 "from": "USD",
                 "to": "EUR",
                 "amount": 100.0,
@@ -172,7 +166,6 @@ def test_create_order_unauthorized_expired_jwt(client: TestClient) -> None:
         "/api/v1/orders",
         json={
             "quote": {
-                "id": str(uuid4()),
                 "from": "USD",
                 "to": "EUR",
                 "amount": 100.0,
@@ -207,7 +200,6 @@ def test_create_order_expired_jwt_accepted_when_authentication_disabled(
             "/api/v1/orders",
             json={
                 "quote": {
-                    "id": str(uuid4()),
                     "from": "USD",
                     "to": "EUR",
                     "amount": 100.0,
@@ -234,7 +226,6 @@ def test_create_order_invalid_quote_signature(client: TestClient) -> None:
     quote = quote_response.json()
     body = {
         "quote": {
-            "id": quote["quote_id"],
             "from": quote["from"],
             "to": quote["to"],
             "amount": quote["amount"],

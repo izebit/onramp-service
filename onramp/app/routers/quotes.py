@@ -41,9 +41,6 @@ def create_quote(
     if body.amount <= 0:
         raise HTTPException(400, detail="amount must be positive")
 
-    if not aml_check(body.amount, currency_from, currency_to):
-        raise HTTPException(400, detail=AML_CHECK_FAILED_MESSAGE)
-
     try:
         rate = rate_provider.get_rate(currency_from, currency_to)
     except ValueError as e:
@@ -65,6 +62,9 @@ def create_quote(
             e,
         )
         raise HTTPException(500, detail=FEE_UNAVAILABLE_MESSAGE) from e
+
+    if not aml_check(body.amount, currency_from, currency_to):
+        raise HTTPException(400, detail=AML_CHECK_FAILED_MESSAGE)
 
     expired_at = datetime.now(timezone.utc).replace(microsecond=0)
     expired_at = expired_at + timedelta(seconds=settings.signature_valid_seconds)

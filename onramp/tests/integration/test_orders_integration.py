@@ -34,7 +34,7 @@ def test_create_order_persisted_in_postgres(
     """Create order via API and verify it is stored in PostgreSQL."""
     quote_response = client.post(
         "/api/v1/quotes/USD/EUR",
-        json={"amount": 100.0},
+        json={"amount": 2_000.0},
     )
     assert quote_response.status_code == 200
     quote = quote_response.json()
@@ -70,6 +70,6 @@ def test_create_order_persisted_in_postgres(
         assert order.status.value == "PENDING"
         assert order.quote["from"] == "USD"
         assert order.quote["to"] == "EUR"
-        assert order.quote["amount"] == 100.0
+        assert order.quote["amount"] == 2_000.0
     finally:
         session.close()

@@ -36,7 +36,7 @@ def test_create_order_success(client: TestClient) -> None:
     """POST /api/v1/orders with valid quote and valid JWT returns order_id."""
     quote_response = client.post(
         "/api/v1/quotes/USD/EUR",
-        json={"amount": 100.0},
+        json={"amount": 2_000.0},
     )
     assert quote_response.status_code == 200
     quote = quote_response.json()
@@ -245,7 +245,7 @@ def test_create_order_invalid_quote_signature(client: TestClient) -> None:
     """POST /api/v1/orders with invalid signature returns 400."""
     quote_response = client.post(
         "/api/v1/quotes/USD/EUR",
-        json={"amount": 100.0},
+        json={"amount": 2_000.0},
     )
     assert quote_response.status_code == 200
     quote = quote_response.json()
@@ -272,7 +272,7 @@ def test_create_order_invalid_quote_signature(client: TestClient) -> None:
 @pytest.mark.unit
 def test_create_order_idempotency_same_key_same_body_returns_existing(client: TestClient) -> None:
     """POST twice with same Idempotency-Key and same body returns same order_id (ignore second)."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body = {
@@ -298,7 +298,7 @@ def test_create_order_idempotency_same_key_same_body_returns_existing(client: Te
 @pytest.mark.unit
 def test_create_order_idempotency_same_key_different_body_returns_409(client: TestClient) -> None:
     """POST with same Idempotency-Key but different body returns 409 Conflict."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body1 = {
@@ -316,7 +316,7 @@ def test_create_order_idempotency_same_key_different_body_returns_409(client: Te
     r1 = client.post("/api/v1/orders", json=body1, headers=headers)
     assert r1.status_code == 200
 
-    quote2_response = client.post("/api/v1/quotes/USD/GBP", json={"amount": 50.0})
+    quote2_response = client.post("/api/v1/quotes/USD/GBP", json={"amount": 2_000.0})
     assert quote2_response.status_code == 200
     quote2 = quote2_response.json()
     body2 = {
@@ -340,7 +340,7 @@ def test_create_order_idempotency_different_keys_same_client_creates_two_orders(
     client: TestClient,
 ) -> None:
     """Same client with different Idempotency-Keys creates two distinct orders."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body = {
@@ -368,7 +368,7 @@ def test_create_order_idempotency_same_key_different_clients_creates_two_orders(
     client: TestClient,
 ) -> None:
     """Same Idempotency-Key used by different clients (client_ref) creates two distinct orders."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body = {
@@ -404,7 +404,7 @@ def test_create_order_idempotency_same_key_same_body_third_request_returns_same_
     client: TestClient,
 ) -> None:
     """Multiple POSTs with same Idempotency-Key and same body all return the same order_id."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body = {
@@ -431,7 +431,7 @@ def test_create_order_idempotency_same_key_same_body_third_request_returns_same_
 @pytest.mark.unit
 def test_create_order_idempotency_409_returns_conflict_detail(client: TestClient) -> None:
     """POST with same key and different body returns 409 with descriptive detail."""
-    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 100.0})
+    quote_response = client.post("/api/v1/quotes/USD/EUR", json={"amount": 2_000.0})
     assert quote_response.status_code == 200
     quote = quote_response.json()
     body1 = {
@@ -448,7 +448,7 @@ def test_create_order_idempotency_409_returns_conflict_detail(client: TestClient
     r1 = client.post("/api/v1/orders", json=body1, headers=_order_headers("conflict-key"))
     assert r1.status_code == 200
 
-    quote2 = client.post("/api/v1/quotes/USD/GBP", json={"amount": 1.0}).json()
+    quote2 = client.post("/api/v1/quotes/USD/GBP", json={"amount": 2_000.0}).json()
     body2 = {
         "quote": {
             "from": quote2["from"],

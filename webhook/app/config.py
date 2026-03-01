@@ -32,5 +32,5 @@ class Settings(BaseSettings):
 
     # Kafka (Debezium CDC orders)
     kafka_bootstrap_servers: str = "localhost:9092"
-    kafka_orders_topic: str = "dbserver1.public.orders"
+    kafka_orders_topic: str = "onramp.public.orders"
     kafka_consumer_group: str = "webhook-orders-consumer"

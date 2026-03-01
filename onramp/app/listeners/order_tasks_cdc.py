@@ -82,6 +82,13 @@ async def _process_order_tasks_cdc_messages(settings: Settings) -> AsyncIterator
         async for msg in consumer:
             if msg.value is None:
                 continue
+            logger.info(
+                "Received event from topic=%s partition=%s offset=%s payload=%s",
+                msg.topic,
+                msg.partition,
+                msg.offset,
+                json.dumps(msg.value, default=str),
+            )
             envelope = msg.value.get("payload", msg.value)
             if isinstance(envelope, dict):
                 await process_order_task_envelope(envelope, settings)

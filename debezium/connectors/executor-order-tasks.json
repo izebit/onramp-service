@@ -1,0 +1,19 @@
+{
+  "name": "executor-order-tasks",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "executor",
+    "database.server.name": "executor",
+    "table.include.list": "public.order_tasks",
+    "plugin.name": "pgoutput",
+    "snapshot.mode": "initial",
+    "topic.creation.enable": "true",
+    "topic.creation.default.replication.factor": 1,
+    "topic.creation.default.partitions": 1,
+    "tasks.max": "1"
+  }
+}

@@ -32,6 +32,6 @@ class Settings(BaseSettings):
 
     # Kafka (Debezium CDC order_tasks from executor DB)
     kafka_bootstrap_servers: str = "localhost:9092"
-    kafka_order_tasks_topic: str = "dbserver1.public.order_tasks"
+    kafka_order_tasks_topic: str = "executor.public.order_tasks"
     kafka_consumer_group: str = "onramp-order-tasks-consumer"
     enable_order_tasks_cdc: bool = True

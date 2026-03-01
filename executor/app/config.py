@@ -1,0 +1,25 @@
+"""Application settings using pydantic-settings."""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Load from environment and .env file."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    app_name: str = "executor"
+    debug: bool = False
+    host: str = "0.0.0.0"
+    port: int = 8002
+
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/executor"
+
+    # Kafka (Debezium CDC orders)
+    kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_orders_topic: str = "dbserver1.public.orders"
+    kafka_consumer_group: str = "executor-orders-consumer"

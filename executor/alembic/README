@@ -1,0 +1,2 @@
+Alembic migrations for executor. Run from executor root:
+  alembic upgrade head

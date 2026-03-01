@@ -1,4 +1,4 @@
-"""Order processing step: one row per order to process (CDC creates with PENDING)."""
+"""Order processing step: one row per order to execute (created when order is enqueued)."""
 
 from datetime import datetime, timezone
 from enum import Enum as PyEnum
@@ -18,7 +18,7 @@ class ProcessingStepStatus(str, PyEnum):
 
 
 class OrderProcessingStep(Base):
-    """One processing step for an order (created from CDC on new order)."""
+    """One processing step for an order (enqueued for execution)."""
 
     __tablename__ = "order_processing_steps"
 

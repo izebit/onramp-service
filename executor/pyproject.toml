@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "executor"
 version = "0.1.0"
-description = "Consumes order CDC from Kafka and inserts order_processing_steps."
+description = "Service that executes orders."
 authors = []
 readme = "README.md"
 packages = [{ include = "app" }]

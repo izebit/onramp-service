@@ -1,4 +1,4 @@
-"""FastAPI application entrypoint: runs migrations and orders CDC consumer."""
+"""FastAPI application entrypoint for executor (order execution service)."""
 
 import asyncio
 import logging
@@ -33,7 +33,7 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations, start orders CDC consumer."""
+    """Run migrations, start order CDC consumer (enqueues new orders for execution)."""
     _run_migrations()
     consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
     try:

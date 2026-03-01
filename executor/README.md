@@ -1,6 +1,6 @@
 # Executor
 
-Microservice that consumes order CDC events from Kafka and inserts rows into `order_processing_steps`.
+Service that executes orders. It consumes order CDC events from Kafka and enqueues new orders into `order_processing_steps` for execution.
 
 ## Table: order_processing_steps
 
@@ -25,4 +25,4 @@ poetry install
 poetry run uvicorn app.main:app --host 0.0.0.0 --port 8002
 ```
 
-Migrations run on startup. The Kafka consumer runs in the app lifespan.
+Migrations run on startup. The order CDC consumer runs in the app lifespan and enqueues new orders for execution.

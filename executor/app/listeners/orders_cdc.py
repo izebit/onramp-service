@@ -1,4 +1,4 @@
-"""Consume Debezium CDC events for orders; on create, insert order_processing_steps row."""
+"""Consume order CDC events; on new order create, enqueue for execution (insert order_processing_steps row)."""
 
 import asyncio
 import json
@@ -33,7 +33,7 @@ def _get_order_data_from_create_envelope(value: dict) -> tuple[str, str] | None:
 def _insert_order_processing_step(
     session: Session, order_id: str, idempotency_key: str
 ) -> None:
-    """Insert one order_processing_steps row: PENDING, retry 0, process_after now."""
+    """Insert one order_processing_steps row (enqueue order for execution)."""
     step = OrderProcessingStep(
         order_id=order_id,
         idempotency_key=idempotency_key,
@@ -46,7 +46,7 @@ def _insert_order_processing_step(
 
 
 async def process_cdc_envelope(envelope: dict, settings: Settings) -> bool:
-    """Process one Debezium CDC envelope: on create, insert order_processing_steps row.
+    """Process one order CDC envelope: on create, enqueue order for execution.
     Returns True if a row was inserted."""
     data = _get_order_data_from_create_envelope(envelope)
     if not data:
@@ -62,7 +62,7 @@ async def process_cdc_envelope(envelope: dict, settings: Settings) -> bool:
 
 
 async def _process_orders_cdc_messages(settings: Settings) -> AsyncIterator[None]:
-    """Consume orders CDC topic; on create event, insert step. Yields to allow cancellation."""
+    """Consume orders CDC topic; on create event, enqueue order for execution. Yields to allow cancellation."""
     servers = [s.strip() for s in settings.kafka_bootstrap_servers.split(",")]
     consumer = AIOKafkaConsumer(
         settings.kafka_orders_topic,
@@ -87,14 +87,14 @@ async def _process_orders_cdc_messages(settings: Settings) -> AsyncIterator[None
 
 
 async def run_orders_cdc_consumer(settings: Settings) -> None:
-    """Run the orders CDC Kafka consumer until cancelled."""
-    logger.info("Orders CDC consumer starting topic=%s", settings.kafka_orders_topic)
+    """Run the order CDC consumer until cancelled (enqueues new orders for execution)."""
+    logger.info("Order CDC consumer starting topic=%s", settings.kafka_orders_topic)
     try:
         async for _ in _process_orders_cdc_messages(settings):
             pass
     except asyncio.CancelledError:
-        logger.info("Orders CDC consumer cancelled")
+        logger.info("Order CDC consumer cancelled")
     except Exception as e:
-        logger.exception("Orders CDC consumer failed: %s", e)
+        logger.exception("Order CDC consumer failed: %s", e)
     finally:
-        logger.info("Orders CDC consumer stopped")
+        logger.info("Order CDC consumer stopped")

@@ -11,6 +11,7 @@ python = "^3.14"
 fastapi = "^0.115"
 uvicorn = { extras = ["standard"], version = "^0.32" }
 pydantic-settings = "^2.6"
+pyjwt = "^2.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"

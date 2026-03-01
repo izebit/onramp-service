@@ -36,3 +36,30 @@ class QuoteResponse(BaseModel):
     rate: float
     expired_at: datetime
     signature: str
+
+
+class OrderQuote(BaseModel):
+    """Quote payload when creating an order."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: UUID
+    from_: Currency = Field(alias="from")
+    to: Currency
+    amount: float
+    fee: float
+    rate: float
+    expired_at: datetime
+    signature: str
+
+
+class OrderCreate(BaseModel):
+    """Request body for creating an order."""
+
+    quote: OrderQuote
+
+
+class OrderResponse(BaseModel):
+    """Order creation response."""
+
+    order_id: UUID

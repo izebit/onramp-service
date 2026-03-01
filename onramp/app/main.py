@@ -6,7 +6,7 @@ import sys
 from fastapi import FastAPI
 
 from app.config import Settings
-from app.routers import quotes
+from app.routers import orders, quotes
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +23,7 @@ app = FastAPI(
 )
 
 app.include_router(quotes.router, prefix="/api/v1")
+app.include_router(orders.router, prefix="/api/v1")
 
 
 @app.get("/health")

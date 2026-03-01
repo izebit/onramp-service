@@ -19,3 +19,9 @@ class Settings(BaseSettings):
 
     # How long a quote signature is valid (seconds)
     signature_valid_seconds: int = 300
+
+    # Shared secret for JWT validation and for signing quote payloads (HMAC-SHA256)
+    secret_key: str = "change-me-in-production"
+
+    # If True, JWT expiration_at is not checked during validation
+    authentication_disabled: bool = False

@@ -23,6 +23,8 @@ Settings are loaded from environment variables or a `.env` file (see `app/config
 - `HOST` (default: `0.0.0.0`)
 - `PORT` (default: `8000`)
 - `SIGNATURE_VALID_SECONDS` (default: `300`) — how long a quote signature is valid
+- `SECRET_KEY` (default: `change-me-in-production`) — secret for JWT validation and quote signing
+- `AUTHENTICATION_DISABLED` (default: `false`) — if true, JWT `expiration_at` is not checked
 
 ## Endpoints
 

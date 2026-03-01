@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.db import SessionLocal
-from app.models import OrderProcessingStep, ProcessingStepStatus
+from app.models import OrderProcessingStep, OrderTask, OrderTaskStatus, ProcessingStepStatus
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def _get_order_id_from_create_envelope(value: dict) -> str | None:
 
 
 def _insert_order_processing_step(session: Session, order_id: str) -> None:
-    """Insert one order_processing_steps row (enqueue order for execution)."""
+    """Insert order_processing_steps row and order_tasks row in one transaction (enqueue order)."""
     step = OrderProcessingStep(
         order_id=order_id,
         status=ProcessingStepStatus.PENDING,
@@ -36,6 +36,8 @@ def _insert_order_processing_step(session: Session, order_id: str) -> None:
         process_after=datetime.now(timezone.utc),
     )
     session.add(step)
+    task = OrderTask(order_id=order_id, status=OrderTaskStatus.PROCESSING)
+    session.add(task)
     session.commit()
 
 

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy import select
 
-from app.models import OrderProcessingStep, ProcessingStepStatus
+from app.models import OrderProcessingStep, OrderTask, OrderTaskStatus, ProcessingStepStatus
 from app.invoker.processor import _run_cycle_sync
 from app.invoker.selector import select_pending_tasks
 
@@ -49,6 +49,26 @@ def test_invoker_step_completed_when_payment_succeeds(
 
     db_session.refresh(step)
     assert step.status == ProcessingStepStatus.COMPLETED
+
+
+@pytest.mark.integration
+def test_invoker_order_task_updated_to_completed_when_payment_succeeds(
+    settings,
+    db_session,
+    _patch_app_db,
+) -> None:
+    """When payment succeeds, OrderTask for that order_id is updated to COMPLETED."""
+    order_id = "ord-task-completed-001"
+    _create_order_processing_step(db_session, order_id=order_id)
+    task = OrderTask(order_id=order_id, status=OrderTaskStatus.PROCESSING)
+    db_session.add(task)
+    db_session.commit()
+
+    with patch("app.invoker.processor.execute_payment", return_value="success"):
+        _run_cycle_sync(settings)
+
+    db_session.refresh(task)
+    assert task.status == OrderTaskStatus.COMPLETED
 
 
 @pytest.mark.integration
@@ -172,3 +192,28 @@ def test_invoker_execute_payment_called_with_order_id_and_settings(
         if call_args[0][0] == order_id:
             assert call_args[0][1] is settings
             break
+
+
+@pytest.mark.integration
+def test_invoker_order_task_updated_to_error_when_retries_exhausted(
+    settings,
+    db_session,
+    _patch_app_db,
+) -> None:
+    """When payment fails and retry >= max_retry - 1, OrderTask is updated to ERROR."""
+    order_id = "ord-task-error-001"
+    max_retry = settings.execution_max_retry
+    step = _create_order_processing_step(
+        db_session, order_id=order_id, retry=max_retry - 1
+    )
+    task = OrderTask(order_id=order_id, status=OrderTaskStatus.PROCESSING)
+    db_session.add(task)
+    db_session.commit()
+
+    with patch("app.invoker.processor.execute_payment", return_value="error"):
+        _run_cycle_sync(settings)
+
+    db_session.refresh(step)
+    assert step.status == ProcessingStepStatus.FAILED
+    db_session.refresh(task)
+    assert task.status == OrderTaskStatus.ERROR

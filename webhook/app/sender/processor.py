@@ -51,6 +51,7 @@ def _run_cycle_sync(settings: Settings) -> None:
                     failed_status=ProcessingStepStatus.FAILED,
                     create_next_step=_create_next_step,
                 )
+                session.commit()
             except Exception as e:
                 logger.exception("Sender step failed step_id=%s: %s", step.id, e)
                 session.rollback()

@@ -5,7 +5,7 @@ import asyncio
 import pytest
 from sqlalchemy import select
 
-from app.models import OrderProcessingStep, ProcessingStepStatus
+from app.models import OrderProcessingStep, OrderTask, OrderTaskStatus, ProcessingStepStatus
 
 
 def _create_envelope(order_id: str, op: str = "c") -> dict:
@@ -40,6 +40,12 @@ def test_process_cdc_envelope_inserts_order_processing_step(
     assert step.retry == 0
     assert step.process_after is not None
     assert step.created_at is not None
+
+    tasks = list(
+        db_session.scalars(select(OrderTask).where(OrderTask.order_id == order_id)).all()
+    )
+    assert len(tasks) == 1
+    assert tasks[0].status == OrderTaskStatus.PROCESSING
 
 
 @pytest.mark.integration

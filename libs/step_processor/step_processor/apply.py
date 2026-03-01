@@ -17,18 +17,16 @@ def apply_step_result(
     failed_status: Any,
     create_next_step: Callable[[Any, datetime], Any],
 ) -> None:
-    """Mark step completed or failed; on failure create next step with backoff if retry < max."""
+    """Mark step completed or failed; on failure create next step with backoff if retry < max.
+    Caller must commit the session."""
     if success:
         step.status = completed_status
-        session.commit()
         return
     step.status = failed_status
     session.flush()
     if step.retry >= max_retry - 1:
-        session.commit()
         return
     delay = retry_delay_seconds(step.retry)
     process_after = datetime.now(timezone.utc) + timedelta(seconds=delay)
     new_step = create_next_step(step, process_after)
     session.add(new_step)
-    session.commit()

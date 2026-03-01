@@ -3,8 +3,10 @@
 import logging
 from datetime import datetime
 
+from sqlalchemy import update
+
 from app.config import Settings
-from app.models import OrderProcessingStep, ProcessingStepStatus
+from app.models import OrderProcessingStep, OrderTask, OrderTaskStatus, ProcessingStepStatus
 
 from step_processor import apply_step_result, run_loop
 from app.invoker.payment_provider import execute_payment
@@ -42,6 +44,19 @@ def _run_cycle_sync(settings: Settings) -> None:
                     failed_status=ProcessingStepStatus.FAILED,
                     create_next_step=_create_next_step,
                 )
+                if success:
+                    session.execute(
+                        update(OrderTask)
+                        .where(OrderTask.order_id == step.order_id)
+                        .values(status=OrderTaskStatus.COMPLETED)
+                    )
+                elif step.retry >= settings.execution_max_retry - 1:
+                    session.execute(
+                        update(OrderTask)
+                        .where(OrderTask.order_id == step.order_id)
+                        .values(status=OrderTaskStatus.ERROR)
+                    )
+                session.commit()
             except Exception as e:
                 logger.exception("Invoker step failed step_id=%s: %s", step.id, e)
                 session.rollback()

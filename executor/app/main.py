@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config import Settings
+from app.invoker import run_invoker
 from app.listeners import run_orders_cdc_consumer
 
 logging.basicConfig(
@@ -33,15 +34,21 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations, start order CDC consumer (enqueues new orders for execution)."""
+    """Run migrations, start order CDC consumer and invoker (process tasks via payment provider)."""
     _run_migrations()
     consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
+    invoker_task = asyncio.create_task(run_invoker(settings))
     try:
         yield
     finally:
         consumer_task.cancel()
+        invoker_task.cancel()
         try:
             await consumer_task
+        except asyncio.CancelledError:
+            pass
+        try:
+            await invoker_task
         except asyncio.CancelledError:
             pass
 

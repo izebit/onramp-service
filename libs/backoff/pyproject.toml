@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "backoff"
+version = "0.1.0"
+description = "Shared retry delay (exponential backoff + jitter)."
+authors = []
+readme = "README.md"
+packages = [{ include = "backoff" }]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

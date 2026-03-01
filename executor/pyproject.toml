@@ -9,6 +9,8 @@ packages = [{ include = "app" }]
 [tool.poetry.dependencies]
 python = "^3.14"
 aiokafka = "^0.11.0"
+backoff = { path = "../libs/backoff", develop = true }
+step-processor = { path = "../libs/step_processor", develop = true }
 alembic = "^1.14"
 fastapi = "^0.116"
 uvicorn = { extras = ["standard"], version = "^0.32" }

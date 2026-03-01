@@ -116,6 +116,20 @@ files = [
 ]
 
 [[package]]
+name = "backoff"
+version = "0.1.0"
+description = "Shared retry delay (exponential backoff + jitter)."
+optional = false
+python-versions = "^3.14"
+groups = ["main"]
+files = []
+develop = true
+
+[package.source]
+type = "directory"
+url = "../libs/backoff"
+
+[[package]]
 name = "certifi"
 version = "2026.2.25"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1196,6 +1210,24 @@ anyio = ">=3.6.2,<5"
 full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
 
 [[package]]
+name = "step-processor"
+version = "0.1.0"
+description = "Shared task loop and step result application (backoff, retry)."
+optional = false
+python-versions = "^3.14"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+backoff = {path = "../backoff", develop = true}
+sqlalchemy = "^2.0"
+
+[package.source]
+type = "directory"
+url = "../libs/step_processor"
+
+[[package]]
 name = "testcontainers"
 version = "4.14.1"
 description = "Python library for throwaway instances of anything that can run in a Docker container"
@@ -1668,4 +1700,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "1cee0eef685f23cdc1708a38dcd74d1140692d0ea81439adbb358fa50dc81e9f"
+content-hash = "18ae1374feb2f816046325ce9aea86cdee15f7d6ace1afce8ff1ccfeac159a18"

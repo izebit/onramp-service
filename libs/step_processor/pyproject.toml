@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "step-processor"
+version = "0.1.0"
+description = "Shared task loop and step result application (backoff, retry)."
+authors = []
+readme = "README.md"
+packages = [{ include = "step_processor" }]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+backoff = { path = "../backoff", develop = true }
+sqlalchemy = "^2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

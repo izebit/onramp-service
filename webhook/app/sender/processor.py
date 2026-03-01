@@ -1,48 +1,25 @@
 """Sender loop: select pending tasks, send to webhooks, mark completed or create retry with backoff."""
 
-import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
-
-from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.config import Settings
 from app.models import NotificationProcessingStep, ProcessingStepStatus
 
-from app.sender.backoff import retry_delay_seconds
+from step_processor import apply_step_result, run_loop
 from app.sender.selector import select_pending_tasks
 from app.sender.sending import build_payload, send_to_webhooks
 
 logger = logging.getLogger(__name__)
 
 
-def _apply_result(
-    session: Session,
-    step: NotificationProcessingStep,
-    notification_id: int,
-    success: bool,
-    settings: Settings,
-) -> None:
-    """Mark step completed or failed; on failure create new PENDING step with delayed process_after if attempt count < max."""
-    if success:
-        step.status = ProcessingStepStatus.COMPLETED
-        session.commit()
-        return
-    step.status = ProcessingStepStatus.FAILED
-    session.flush()
-    if step.retry >= settings.sending_max_retry - 1:
-        session.commit()
-        return
-    delay = retry_delay_seconds(step.retry)
-    process_after = datetime.now(timezone.utc) + timedelta(seconds=delay)
-    new_step = NotificationProcessingStep(
-        notification_id=notification_id,
+def _create_next_step(step: NotificationProcessingStep, process_after: datetime) -> NotificationProcessingStep:
+    return NotificationProcessingStep(
+        notification_id=step.notification_id,
         status=ProcessingStepStatus.PENDING,
         process_after=process_after,
         retry=step.retry + 1,
     )
-    session.add(new_step)
-    session.commit()
 
 
 def _run_cycle_sync(settings: Settings) -> None:
@@ -60,7 +37,15 @@ def _run_cycle_sync(settings: Settings) -> None:
                     continue
                 payload = build_payload(notification)
                 success = send_to_webhooks(payload, webhooks, timeout_seconds=settings.sending_timeout_in_seconds)
-                _apply_result(session, step, step.notification_id, success, settings)
+                apply_step_result(
+                    session=session,
+                    step=step,
+                    success=success,
+                    max_retry=settings.sending_max_retry,
+                    completed_status=ProcessingStepStatus.COMPLETED,
+                    failed_status=ProcessingStepStatus.FAILED,
+                    create_next_step=_create_next_step,
+                )
             except Exception as e:
                 logger.exception("Sender step failed step_id=%s: %s", step.id, e)
                 session.rollback()
@@ -69,18 +54,9 @@ def _run_cycle_sync(settings: Settings) -> None:
 
 
 async def run_sender(settings: Settings) -> None:
-    """Loop: run sync cycle in executor (select, send, update/insert retry), then sleep. Runs until cancelled."""
-    logger.info("Sender starting max_retry=%s", settings.sending_max_retry)
-    loop = asyncio.get_running_loop()
-    poll_interval = 1.0
-    try:
-        while True:
-            try:
-                await loop.run_in_executor(None, lambda: _run_cycle_sync(settings))
-            except Exception as e:
-                logger.exception("Sender cycle failed: %s", e)
-            await asyncio.sleep(poll_interval)
-    except asyncio.CancelledError:
-        logger.info("Sender cancelled")
-    finally:
-        logger.info("Sender stopped")
+    """Loop: run sync cycle (select, send, update/insert retry), then sleep. Runs until cancelled."""
+    await run_loop(
+        lambda: _run_cycle_sync(settings),
+        poll_interval=1.0,
+        log_name="Sender",
+    )

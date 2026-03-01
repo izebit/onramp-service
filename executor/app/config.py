@@ -19,6 +19,9 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://postgres:postgres@localhost:5432/executor"
 
+    # Invoker: process order_processing_steps (payment + retry)
+    execution_max_retry: int = 5
+
     # Kafka (Debezium CDC orders)
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_orders_topic: str = "dbserver1.public.orders"

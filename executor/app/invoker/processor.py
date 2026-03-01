@@ -31,7 +31,7 @@ def _run_cycle_sync(settings: Settings) -> None:
         tasks = select_pending_tasks(session, settings)
         for step in tasks:
             try:
-                result = execute_payment(step, settings)
+                result = execute_payment(step.order_id, settings)
                 success = result == "success"
                 apply_step_result(
                     session=session,

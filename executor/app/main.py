@@ -3,10 +3,7 @@
 import asyncio
 import logging
 import sys
-from pathlib import Path
 
-from alembic import command
-from alembic.config import Config
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
@@ -21,23 +18,16 @@ logging.basicConfig(
     force=True,
 )
 
+logger = logging.getLogger(__name__)
 settings = Settings()
-
-
-def _run_migrations() -> None:
-    """Run Alembic migrations to head."""
-    root = Path(__file__).resolve().parent.parent
-    config = Config(str(root / "alembic.ini"))
-    config.set_main_option("script_location", str(root / "alembic"))
-    command.upgrade(config, "head")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations, start order CDC consumer and invoker (process tasks via payment provider)."""
-    _run_migrations()
+    """Start order CDC consumer and invoker (process tasks via payment provider)."""
     consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
     invoker_task = asyncio.create_task(run_invoker(settings))
+    logger.info("CDC consumer and invoker tasks started")
     try:
         yield
     finally:
@@ -63,6 +53,7 @@ app = FastAPI(
 @app.get("/health")
 def health() -> dict[str, str]:
     """Health check endpoint."""
+    logger.info("Health check endpoint called")
     return {"status": "ok"}
 
 

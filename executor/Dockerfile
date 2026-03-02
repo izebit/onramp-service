@@ -1,5 +1,5 @@
 # Build from repo root: docker build -f executor/Dockerfile .
-FROM python:3.12-slim
+FROM python:3.14
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
@@ -16,10 +16,10 @@ COPY executor/pyproject.toml executor/poetry.lock executor/
 COPY executor/ executor/
 
 RUN cd executor && poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-dev
+    && poetry install --no-interaction --without dev
 
 WORKDIR /app/executor
 
 EXPOSE 8002
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8002"]

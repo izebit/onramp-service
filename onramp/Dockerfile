@@ -1,5 +1,5 @@
 # Build from repo root: docker build -f onramp/Dockerfile .
-FROM python:3.12-slim
+FROM python:3.14
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
@@ -13,10 +13,10 @@ COPY onramp/pyproject.toml onramp/poetry.lock onramp/
 COPY onramp/ onramp/
 
 RUN cd onramp && poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-dev
+    && poetry install --no-interaction --without dev
 
 WORKDIR /app/onramp
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

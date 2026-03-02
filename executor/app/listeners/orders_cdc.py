@@ -67,18 +67,22 @@ async def _process_orders_cdc_messages(settings: Settings) -> AsyncIterator[None
         auto_offset_reset="earliest",
         enable_auto_commit=False,
     )
+    logger.info("Connecting to Kafka topic=%s bootstrap_servers=%s", settings.kafka_orders_topic, servers)
     await consumer.start()
+    logger.info("Kafka consumer connected; consuming messages")
     try:
         async for msg in consumer:
             if msg.value is None:
+                logger.debug("Received message with empty value, skipping topic=%s partition=%s offset=%s", msg.topic, msg.partition, msg.offset)
                 continue
+            payload_str = json.dumps(msg.value, default=str)
             logger.info(
-                "Received event from topic=%s partition=%s offset=%s payload=%s",
+                "Received CDC event topic=%s partition=%s offset=%s",
                 msg.topic,
                 msg.partition,
                 msg.offset,
-                json.dumps(msg.value, default=str),
             )
+            logger.info("Event payload: %s", payload_str)
             envelope = msg.value.get("payload", msg.value)
             if isinstance(envelope, dict):
                 await process_cdc_envelope(envelope, settings)

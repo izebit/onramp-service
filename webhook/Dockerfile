@@ -1,5 +1,5 @@
 # Build from repo root: docker build -f webhook/Dockerfile .
-FROM python:3.12-slim
+FROM python:3.14
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
@@ -17,10 +17,10 @@ COPY webhook/pyproject.toml webhook/poetry.lock webhook/
 COPY webhook/ webhook/
 
 RUN cd webhook && poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-dev
+    && poetry install --no-interaction --without dev
 
 WORKDIR /app/webhook
 
 EXPOSE 8001
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8001"]

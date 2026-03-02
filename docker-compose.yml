@@ -93,15 +93,15 @@ services:
         set -e
         sleep 3
         register() {
-          name=$1
-          file=$2
-          code=$(curl -s -o /tmp/body -w "%{http_code}" -X POST -H "Content-Type: application/json" --data @"$file" http://debezium:8083/connectors)
-          if [ "$code" = "201" ] || [ "$code" = "200" ]; then
-            echo "Connector $name created successfully (HTTP $code)"
-          elif [ "$code" = "409" ]; then
-            echo "Connector $name already exists (HTTP 409), skipping"
+          name=$$1
+          file=$$2
+          code=$$(curl -s -o /tmp/body -w "%{http_code}" -X POST -H "Content-Type: application/json" --data @$$file http://debezium:8083/connectors)
+          if [ "$$code" = "201" ] || [ "$$code" = "200" ]; then
+            echo "Connector $$name created successfully (HTTP $$code)"
+          elif [ "$$code" = "409" ]; then
+            echo "Connector $$name already exists (HTTP 409), skipping"
           else
-            echo "Failed to create connector $name (HTTP $code)"
+            echo "Failed to create connector $$name (HTTP $$code)"
             cat /tmp/body
             exit 1
           fi
@@ -116,6 +116,7 @@ services:
       context: .
       dockerfile: onramp/Dockerfile
     image: onramp:latest
+    pull_policy: never
     container_name: onramp
     hostname: onramp
     depends_on:
@@ -141,6 +142,7 @@ services:
       context: .
       dockerfile: executor/Dockerfile
     image: executor:latest
+    pull_policy: never
     container_name: executor
     hostname: executor
     depends_on:
@@ -153,6 +155,7 @@ services:
     ports:
       - "8002:8002"
     environment:
+      PYTHONUNBUFFERED: "1"
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/executor
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ORDER_SERVICE_URL: http://onramp:8000
@@ -168,6 +171,7 @@ services:
       context: .
       dockerfile: webhook/Dockerfile
     image: webhook:latest
+    pull_policy: never
     container_name: webhook
     hostname: webhook
     depends_on:

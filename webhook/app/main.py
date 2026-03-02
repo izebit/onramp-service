@@ -3,10 +3,7 @@
 import asyncio
 import logging
 import sys
-from pathlib import Path
 
-from alembic import command
-from alembic.config import Config
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
@@ -25,18 +22,9 @@ logging.basicConfig(
 settings = Settings()
 
 
-def _run_migrations() -> None:
-    """Run Alembic migrations to head."""
-    root = Path(__file__).resolve().parent.parent
-    config = Config(str(root / "alembic.ini"))
-    config.set_main_option("script_location", str(root / "alembic"))
-    command.upgrade(config, "head")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run migrations, start orders CDC consumer and sender, then serve."""
-    _run_migrations()
+    """Start orders CDC consumer and sender, then serve."""
     consumer_task = asyncio.create_task(run_orders_cdc_consumer(settings))
     sender_task = asyncio.create_task(run_sender(settings))
     try:

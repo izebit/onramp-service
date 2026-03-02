@@ -17,38 +17,60 @@ logger = logging.getLogger(__name__)
 
 
 async def process_cdc_envelope(envelope: dict, settings: Settings) -> bool:
-    """Process one Debezium CDC envelope: fetch order from order service, insert notification.
-    Returns True if a row was inserted, False if skipped (no order_id, fetch failed, or duplicate)."""
+    """Process one Debezium CDC envelope (create/update only): status from payload; client_ref from payload or order service.
+    Returns True if a row was inserted, False if skipped (not c/u, no order_id, no status, or duplicate)."""
+    if envelope.get("op") not in ("c", "u"):
+        return False
     order_id = _get_order_id_from_envelope(envelope)
     if not order_id:
         return False
-    order_info = await _fetch_order_status(settings, order_id)
-    if not order_info:
+    status = _get_status_from_envelope(envelope)
+    if not status:
         return False
-    ref, status = order_info
+    client_ref = _get_client_ref_from_envelope(envelope)
+    if client_ref is None:
+        client_ref = await _fetch_client_ref(settings, order_id)
+    if client_ref is None:
+        return False
     from app.db import SessionLocal
 
     session = SessionLocal()
     try:
-        return _upsert_notification(session, ref, order_id, status)
+        return _upsert_notification(session, client_ref, order_id, status)
     finally:
         session.close()
 
 
 def _get_order_id_from_envelope(value: dict) -> str | None:
-    """Extract order_id from Debezium envelope (after for c/u, before for d)."""
-    op = value.get("op")
-    if op in ("c", "u"):
-        after = value.get("after")
-        return after.get("order_id") if isinstance(after, dict) else None
-    if op == "d":
-        before = value.get("before")
-        return before.get("order_id") if isinstance(before, dict) else None
+    """Extract order_id from Debezium envelope (create/update only; from after)."""
+    if value.get("op") not in ("c", "u"):
+        return None
+    after = value.get("after")
+    return after.get("order_id") if isinstance(after, dict) else None
+
+
+def _get_status_from_envelope(value: dict) -> str | None:
+    """Extract order status from Debezium envelope (create/update only; from after)."""
+    if value.get("op") not in ("c", "u"):
+        return None
+    after = value.get("after")
+    if isinstance(after, dict) and after.get("status"):
+        return str(after["status"])
     return None
 
 
-async def _fetch_order_status(settings: Settings, order_id: str) -> tuple[str, str] | None:
-    """GET order by id from order service. Returns (client_ref, order_status) or None."""
+def _get_client_ref_from_envelope(value: dict) -> str | None:
+    """Extract client_ref from Debezium envelope (create/update only; from after)."""
+    if value.get("op") not in ("c", "u"):
+        return None
+    after = value.get("after")
+    if isinstance(after, dict) and "client_ref" in after:
+        return str(after["client_ref"]) if after["client_ref"] is not None else None
+    return None
+
+
+async def _fetch_client_ref(settings: Settings, order_id: str) -> str | None:
+    """GET order by id from order service. Returns client_ref only, or None."""
     base = settings.order_service_url.rstrip("/")
     url = f"{base}/api/v1/orders/{order_id}"
     try:
@@ -56,7 +78,7 @@ async def _fetch_order_status(settings: Settings, order_id: str) -> tuple[str, s
             r = await client.get(url)
             r.raise_for_status()
             data = r.json()
-            return (data["client_ref"], data["status"])
+            return data.get("client_ref")
     except Exception as e:
         logger.warning("Failed to fetch order %s from order service: %s", order_id, e)
         return None

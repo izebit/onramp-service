@@ -101,10 +101,10 @@ Response:
 
 
 ### Technologies
-All services are written in Python 3 using FastAPI.
-Kafka is used for asynchronous communication between services.
-Debezium is used to publish Change Data Capture (CDC) events from PostgreSQL tables.
-Alembic is used for SQL database migrations.
+All services are written in **Python 3** using **FastAPI**.  
+**Kafka** is used for asynchronous communication between services.   
+**Debezium** is used to publish Change Data Capture (CDC) events from **PostgreSQL** tables.  
+**Alembic** is used for SQL database migrations.  
 
 ### Trade-offs
 Polling tables are used in several parts of the system, including webhook delivery and order execution, using the `SELECT ... FOR UPDATE SKIP LOCKED` approach. This may become a bottleneck at high data volumes, as frequent polling increases database load and limits horizontal scalability.   
@@ -115,7 +115,7 @@ This can be mitigated by checking for existing pending delivery tasks for the sa
 
 ## Usage
 
-Poetry is used for building and running tests. **Docker** and **Docker compose** are used for running the services in containers.
+**Poetry** is used for building and running tests. **Docker** and **Docker compose** are used for running the services in containers.
 
 ### Build
 
@@ -150,7 +150,7 @@ alembic upgrade head
 poetry run uvicorn app.main:app --host 0.0.0.0 --port 8002
 ```
 
-or with **Docker Compose**
+or with **Docker Compose**:
 
 ```bash
 docker-compose up

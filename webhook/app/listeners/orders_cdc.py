@@ -125,18 +125,9 @@ async def _process_orders_cdc_messages(
         async for msg in consumer:
             if msg.value is None:
                 continue
-            logger.info(
-                "Received event from topic=%s partition=%s offset=%s payload=%s",
-                msg.topic,
-                msg.partition,
-                msg.offset,
-                json.dumps(msg.value, default=str),
-            )
-            # Debezium can wrap in "payload" or send envelope at top level
             envelope = msg.value.get("payload", msg.value)
             if isinstance(envelope, dict):
                 await process_cdc_envelope(envelope, settings)
-            # Commit offset only after DB transaction completed (success or duplicate)
             await consumer.commit()
             yield
     finally:

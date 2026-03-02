@@ -76,13 +76,6 @@ async def _process_orders_cdc_messages(settings: Settings) -> AsyncIterator[None
                 logger.debug("Received message with empty value, skipping topic=%s partition=%s offset=%s", msg.topic, msg.partition, msg.offset)
                 continue
             payload_str = json.dumps(msg.value, default=str)
-            logger.info(
-                "Received CDC event topic=%s partition=%s offset=%s",
-                msg.topic,
-                msg.partition,
-                msg.offset,
-            )
-            logger.info("Event payload: %s", payload_str)
             envelope = msg.value.get("payload", msg.value)
             if isinstance(envelope, dict):
                 await process_cdc_envelope(envelope, settings)

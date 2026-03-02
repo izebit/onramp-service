@@ -52,6 +52,7 @@ def send_to_webhooks(
                     "X-Webhook-Signature": signature,
                     "Idempotency-Key": idempotency_key,
                 }
+                logger.info("Sending webhook to url=%s payload=%s headers=%s", wh.url, json.loads(payload_bytes.decode()), headers)
                 r = client.post(wh.url, content=payload_bytes, headers=headers)
                 r.raise_for_status()
             except Exception as e:

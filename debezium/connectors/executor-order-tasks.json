@@ -12,7 +12,7 @@
     "topic.prefix": "executor",
     "table.include.list": "public.order_tasks",
     "plugin.name": "pgoutput",
-    "snapshot.mode": "when_needed",
+    "snapshot.mode": "never",
     "topic.creation.enable": "true",
     "topic.creation.default.replication.factor": 1,
     "topic.creation.default.partitions": 1,

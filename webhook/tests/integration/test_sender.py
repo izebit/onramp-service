@@ -196,6 +196,41 @@ def test_sender_select_pending_tasks_returns_ready_steps(
     assert s.retry == 0
 
 
+@pytest.mark.integration
+def test_sender_select_pending_tasks_ordered_by_created_at(
+    settings,
+    db_session,
+    _patch_app_db,
+) -> None:
+    """select_pending_tasks returns steps in created_at ascending order (oldest first)."""
+    now = datetime.now(timezone.utc)
+    past = now - timedelta(seconds=10)
+
+    # Create three pending steps with different created_at (oldest, middle, newest)
+    n1, s1 = _create_notification_and_step(db_session, client_ref="client-order-a", order_id="ord-a")
+    n2, s2 = _create_notification_and_step(db_session, client_ref="client-order-b", order_id="ord-b")
+    n3, s3 = _create_notification_and_step(db_session, client_ref="client-order-c", order_id="ord-c")
+    s1.process_after = past
+    s2.process_after = past
+    s3.process_after = past
+    db_session.commit()
+    # Set created_at explicitly: s1 oldest, s2 middle, s3 newest
+    s1.created_at = past - timedelta(seconds=2)
+    s2.created_at = past - timedelta(seconds=1)
+    s3.created_at = past
+    db_session.commit()
+    db_session.refresh(s1)
+    db_session.refresh(s2)
+    db_session.refresh(s3)
+
+    tasks = select_pending_tasks(db_session, settings, limit=10)
+    assert len(tasks) == 3
+    steps_returned = [t[0] for t in tasks]
+    assert steps_returned[0].id == s1.id
+    assert steps_returned[1].id == s2.id
+    assert steps_returned[2].id == s3.id
+
+
 def _expected_signature(payload_bytes: bytes, secret: str) -> str:
     """Compute X-Webhook-Signature the same way as sending._sign_payload."""
     return hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()

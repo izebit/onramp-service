@@ -27,6 +27,7 @@ def select_pending_tasks(
                 NotificationProcessingStep.retry < settings.sending_max_retry,
             )
         )
+        .order_by(NotificationProcessingStep.created_at)
         .with_for_update(skip_locked=True)
         .limit(limit)
     )

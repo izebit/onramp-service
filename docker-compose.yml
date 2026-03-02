@@ -85,6 +85,10 @@ services:
     depends_on:
       debezium:
         condition: service_healthy
+      onramp:
+        condition: service_healthy
+      executor:
+        condition: service_healthy
     volumes:
       - ./debezium/connectors:/connectors:ro
     entrypoint: ["/bin/sh", "-c"]

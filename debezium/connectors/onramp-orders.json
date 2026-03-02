@@ -8,6 +8,7 @@
     "database.password": "postgres",
     "database.dbname": "onramp",
     "database.server.name": "onramp",
+    "slot.name": "onramp_orders",
     "topic.prefix": "onramp",
     "table.include.list": "public.orders",
     "plugin.name": "pgoutput",
